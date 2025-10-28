@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Events - College Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0f0f0f;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .user-welcome {
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    .timetable-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timetable-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+
+    .od-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .od-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+
+    /* OD Generator Modal */
+    .od-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .od-modal.active {
+      display: flex;
+    }
+
+    .od-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .od-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 20px;
+    }
+
+    .od-header h2 {
+      color: #667eea;
+      font-size: 2rem;
+    }
+
+    .od-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .od-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .od-form-group label {
+      font-weight: 600;
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .od-form-group select,
+    .od-form-group input {
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .od-form-group select:focus,
+    .od-form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .generate-od-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+
+    .generate-od-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .generate-od-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .od-preview {
+      background: #f8f9fa;
+      border: 2px solid #dee2e6;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      font-family: 'Times New Roman', serif;
+      font-size: 14px;
+      line-height: 1.8;
+      display: none;
+    }
+
+    .od-preview.active {
+      display: block;
+    }
+
+    .od-letterhead {
+      text-align: center;
+      border-bottom: 3px double #333;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .od-letterhead h3 {
+      margin: 5px 0;
+      color: #333;
+    }
+
+    .od-letterhead p {
+      margin: 3px 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .od-content {
+      margin: 20px 0;
+    }
+
+    .od-content p {
+      margin: 10px 0;
+      text-align: justify;
+    }
+
+    .od-signature {
+      margin-top: 40px;
+      text-align: right;
+    }
+
+    .download-od-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .download-od-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Timetable Modal */
+    .timetable-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .timetable-modal.active {
+      display: flex;
+    }
+
+    .timetable-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 1000px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .timetable-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 20px;
+    }
+
+    .timetable-header h2 {
+      color: #667eea;
+      font-size: 2rem;
+    }
+
+    .close-modal-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .close-modal-btn:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+    }
+
+    .timetable-grid {
+      display: grid;
+      grid-template-columns: 100px repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .time-header,
+    .day-header,
+    .time-slot {
+      padding: 15px;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .time-header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .day-header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .time-slot {
+      background: #f8f9fa;
+      border: 2px dashed #dee2e6;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      font-size: 0.85rem;
+      position: relative;
+    }
+
+    .time-slot:hover {
+      background: #e9ecef;
+      border-color: #667eea;
+      transform: scale(1.02);
+    }
+
+    .time-slot.has-class {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+    }
+
+    .time-slot.has-event {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+      color: white;
+      border: none;
+    }
+
+    .time-slot.has-conflict {
+      background: linear-gradient(135deg, #ffa500, #ff8c00);
+      color: white;
+      border: 3px solid #ff0000;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .slot-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .slot-type {
+      font-size: 0.7rem;
+      opacity: 0.9;
+    }
+
+    .legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color {
+      width: 30px;
+      height: 20px;
+      border-radius: 5px;
+    }
+
+    .add-class-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      margin-right: 10px;
+    }
+
+    .add-class-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .clear-btn {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .clear-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    }
+
+    /* Add Class Form Modal */
+    .add-class-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10001;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .add-class-modal.active {
+      display: flex;
+    }
+
+    .add-class-form {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .form-actions button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .save-class-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+    }
+
+    .cancel-btn {
+      background: #6c757d;
+      color: white;
+    }
+
+    .page-title {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    }
+
+    .page-title h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ea66c7 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-title p {
+      color: #ccc;
+      font-size: 1.2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .config-info {
+      background: rgba(23, 162, 184, 0.2);
+      border: 1px solid rgba(23, 162, 184, 0.3);
+      color: #17a2b8;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-section {
+      margin: 30px 0;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      min-width: 300px;
+      font-size: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #ea66d8;
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .refresh-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .refresh-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Netflix-style Categories */
+    .category-section {
+      margin: 40px 0;
+    }
+
+    .category-title {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: white;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .category-count {
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      font-weight: normal;
+    }
+
+    .events-row {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 10px 0 20px 0;
+      scroll-behavior: smooth;
+    }
+
+    /* Custom scrollbar */
+    .events-row::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .events-row::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+
+    .events-row::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #ea66df, #764ba2);
+      border-radius: 10px;
+    }
+
+    .event-card {
+      min-width: 320px;
+      max-width: 320px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      border-radius: 15px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .event-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(234, 102, 168, 0.5);
+    }
+
+    .event-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .event-card:hover .event-image {
+      transform: scale(1.05);
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(135deg, #ea66c5 0%, #764ba2 100%);
+      border-radius: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: white;
+    }
+
+    .event-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: white;
+      line-height: 1.3;
+      height: 2.6rem;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .event-details {
+      margin-bottom: 15px;
+    }
+
+    .event-detail {
+      margin: 8px 0;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .event-detail-icon {
+      font-size: 1rem;
+      width: 16px;
+    }
+
+    .event-description {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin: 10px 0;
+      height: 3.6rem;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .register-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      text-align: center;
+      transition: all 0.3s ease;
+      display: block;
+      margin-top: 15px;
+    }
+
+    .register-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+      background: linear-gradient(135deg, #218838, #1ea085);
+    }
+
+    .no-events {
+      text-align: center;
+      padding: 80px 20px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .no-events h3 {
+      color: white;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #667eea;
+      font-size: 1.2rem;
+    }
+
+    .category-icon {
+      font-size: 1.5rem;
+    }
+
+    /* Category specific colors */
+    .category-technical .category-title { color: #007bff; }
+    .category-cultural .category-title { color: #e91e63; }
+    .category-sports .category-title { color: #ff9800; }
+    .category-academic .category-title { color: #4caf50; }
+    .category-workshop .category-title { color: #9c27b0; }
+    .category-seminar .category-title { color: #ff5722; }
+    .category-general .category-title { color: #607d8b; }
+
+    @media (max-width: 768px) {
+      .header-content {
+        text-align: center;
+      }
+      
+      .page-title h1 {
+        font-size: 2rem;
+      }
+      
+      .search-section {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .search-input {
+        min-width: 250px;
+      }
+      
+      .event-card {
+        min-width: 280px;
+        max-width: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="user-welcome">
+        Welcome, <span id="userName">Student</span>! s
+      </div>
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <button onclick="openODGenerator()" class="od-btn" title="Generate OD Letter">
+          OD 
+        </button>
+        <button onclick="openTimetable()" class="timetable-btn" title="Timetable">
+          TT
+        </button>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-title">
+    <h1> Event connect</h1>
+    <p>Discover and register for exciting events happening on campus</p>
+  </div>
+
+  <div class="container">
+    <div id="configInfo" class="config-info">
+      <strong>ℹ Demo Mode:</strong> Showing sample events. Configure Supabase for live data.
+    </div>
+
+    <div class="search-section">
+      <input type="text" id="searchInput" class="search-input" placeholder=" Search events..." onkeyup="searchEvents()">
+      <button onclick="loadEvents()" class="refresh-btn">🔄 Refresh Events</button>
+    </div>
+
+    <div id="eventsContainer" class="loading">
+      Loading events...
+    </div>
+  </div>
+
+  <!-- Timetable Modal -->
+  <div id="timetableModal" class="timetable-modal">
+    <div class="timetable-container">
+      <div class="timetable-header">
+        <h2> My Timetable</h2>
+        <button onclick="closeTimetable()" class="close-modal-btn">✕ Close</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <button onclick="openAddClass()" class="add-class-btn">➕ Add Class</button>
+        <button onclick="clearTimetable()" class="clear-btn"> Clear All</button>
+      </div>
+
+      <div class="timetable-grid" id="timetableGrid">
+        <!-- Grid will be generated by JavaScript -->
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: linear-gradient(135deg, #28a745, #20c997);"></div>
+          <span>Classes</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: linear-gradient(135deg, #ff6b6b, #ee5a6f);"></div>
+          <span>Events</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: linear-gradient(135deg, #ffa500, #ff8c00); border: 3px solid #ff0000;"></div>
+          <span> Conflict</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OD Generator Modal -->
+  <div id="odModal" class="od-modal">
+    <div class="od-container">
+      <div class="od-header">
+        <h2> Generate OD Letter</h2>
+        <button onclick="closeODGenerator()" class="close-modal-btn">✕ Close</button>
+      </div>
+
+      <div class="od-form">
+        <div class="od-form-group">
+          <label>Select Event *</label>
+          <select id="odEventSelect" onchange="updateODPreview()" required>
+            <option value="">-- Choose an event --</option>
+          </select>
+        </div>
+
+        <div class="od-form-group">
+          <label>Your Name *</label>
+          <input type="text" id="odStudentName" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="od-form-group">
+          <label>Your Roll Number *</label>
+          <input type="text" id="odRollNumber" placeholder="e.g., 21CS001" required>
+        </div>
+
+        <div class="od-form-group">
+          <label>Department *</label>
+          <input type="text" id="odDepartment" placeholder="e.g., Computer Science" required>
+        </div>
+
+        <div class="od-form-group">
+          <label>Year *</label>
+          <select id="odYear" required>
+            <option value="">Select Year</option>
+            <option value="I">I Year</option>
+            <option value="II">II Year</option>
+            <option value="III">III Year</option>
+            <option value="IV">IV Year</option>
+          </select>
+        </div>
+
+        <button onclick="generateODPreview()" class="generate-od-btn">Generate OD letter</button>
+      </div>
+
+      <!-- OD Preview -->
+      <div id="odPreview" class="od-preview">
+        <!-- Will be filled by JavaScript -->
+      </div>
+
+      <button id="downloadODBtn" onclick="downloadOD()" class="download-od-btn" style="display:none;">
+         Download OD Letter (PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Class Modal -->
+  <div id="addClassModal" class="add-class-modal">
+    <div class="add-class-form">
+      <h3 style="margin-bottom: 20px; color: #667eea;">➕ Add Class</h3>
+      <form id="classForm">
+        <div class="form-group">
+          <label>Class Name *</label>
+          <input type="text" id="className" placeholder="e.g., Data Structures" required>
+        </div>
+        <div class="form-group">
+          <label>Day *</label>
+          <select id="classDay" required>
+            <option value="">Select Day</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Time Slot *</label>
+          <select id="classTime" required>
+            <option value="">Select Time</option>
+            <option value="0">9:00 AM - 10:00 AM</option>
+            <option value="1">10:00 AM - 11:00 AM</option>
+            <option value="2">11:00 AM - 12:00 PM</option>
+            <option value="3">12:00 PM - 1:00 PM</option>
+            <option value="4">1:00 PM - 2:00 PM</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="save-class-btn">💾 Save</button>
+          <button type="button" onclick="closeAddClass()" class="cancel-btn">✕ Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 🔥🔥🔥 PASTE YOUR SUPABASE ANON KEY HERE 🔥🔥🔥
+    const SUPABASE_URL = 'https://erqzpxeqshcbzvoshqvm.supabase.co';
+    const SUPABASE_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
+    
+    let supabase = null;
+    let currentUser = null;
+    let allEvents = [];
+
+    // Initialize Supabase - SIMPLIFIED CHECK
+    console.log('🔍 Checking Supabase in events page...');
+    console.log('Key length:', SUPABASE_KEY.length);
+    console.log('Key starts with eyJ:', SUPABASE_KEY.startsWith('eyJ'));
+    
+    if (SUPABASE_KEY && SUPABASE_KEY.length > 100 && SUPABASE_KEY.startsWith('eyJ')) {
+      try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        document.getElementById('configInfo').style.display = 'none';
+        console.log('✅ Events page: Supabase connected!');
+        
+        // Test connection
+        supabase.from('events').select('count').then(result => {
+          console.log('✅ Supabase connection test:', result);
+        }).catch(err => {
+          console.error('❌ Supabase connection test failed:', err);
+          supabase = null; // Disable Supabase if test fails
+        });
+      } catch (error) {
+        console.error('❌ Supabase connection failed:', error);
+        supabase = null;
+      }
+    } else {
+      document.getElementById('configInfo').innerHTML = '<strong>ℹ️ Demo Mode:</strong> Connect Supabase to see live events.';
+      console.error('❌ Invalid Supabase key in events page');
+    }
+
+    // Check authentication on page load
+    window.addEventListener('load', async () => {
+      const userData = sessionStorage.getItem('currentUser');
+      
+      if (!userData) {
+        alert('Please log in first!');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = JSON.parse(userData);
+      
+      if (currentUser.user_type === 'hoster') {
+        alert('Hosters should use the event management page.');
+        window.location.href = 'hostevent.html';
+        return;
+      }
+
+      // Update welcome message
+      const userTypeIcon = currentUser.user_type === 'staff' ? '👨‍🏫' : '👨‍🎓';
+      document.getElementById('userName').textContent = `${currentUser.name}`;
+      document.querySelector('.user-welcome').innerHTML = `Welcome, <span id="userName">${currentUser.name}</span>! ${userTypeIcon}`;
+
+      loadEvents();
+    });
+
+    // Load events based on mode
+    async function loadEvents() {
+      try {
+        document.getElementById('eventsContainer').innerHTML = '<div class="loading">Loading events...</div>';
+        
+        console.log('🔄 Starting to load events...');
+        console.log('Supabase available:', !!supabase);
+        
+        // Add timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Loading timeout')), 5000)
+        );
+        
+        if (supabase) {
+          await Promise.race([loadEventsFromSupabase(), timeoutPromise]);
+        } else {
+          console.log('⚠️ No Supabase, using demo mode');
+          loadEventsFromDemo();
+        }
+      } catch (error) {
+        console.error('❌ Load events failed:', error);
+        loadEventsFromDemo(); // Always fallback to demo
+      }
+    }
+
+    // Load events from Supabase
+    async function loadEventsFromSupabase() {
+      try {
+        console.log('📥 Loading events from Supabase...');
+
+        const { data: events, error } = await supabase
+          .from('events')
+          .select('*')
+          .order('event_date', { ascending: true });
+
+        if (error) {
+          console.error('❌ Supabase error:', error);
+          // Fallback to demo mode if Supabase fails
+          console.log('⚠️ Falling back to demo mode...');
+          loadEventsFromDemo();
+          return;
+        }
+
+        console.log('✅ Loaded events from Supabase:', events);
+        allEvents = events || [];
+        
+        // If no events in Supabase, add sample events
+        if (allEvents.length === 0) {
+          console.log('⚠️ No events in Supabase, loading demo events');
+          loadEventsFromDemo();
+          return;
+        }
+        
+        displayEventsByCategory(allEvents);
+      } catch (error) {
+        console.error('❌ Fatal error loading events:', error);
+        // Fallback to demo on any error
+        loadEventsFromDemo();
+      }
+    }
+
+    // Load events from demo/localStorage
+    function loadEventsFromDemo() {
+      const savedEvents = localStorage.getItem('demoEvents');
+      const demoEvents = savedEvents ? JSON.parse(savedEvents) : [];
+
+      // Add sample events if none exist
+      if (demoEvents.length === 0) {
+        demoEvents.push(
+          {
+            id: 1,
+            title: "AI & Machine Learning Workshop",
+            venue: "Tech Lab 1",
+            event_date: "2024-12-20T10:00:00",
+            reg_link: "https://forms.google.com/tech-workshop",
+            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23007bff'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='18'%3EAI Workshop%3C/text%3E%3C/svg%3E",
+            description: "Learn the fundamentals of AI and machine learning with hands-on coding sessions.",
+            hoster_id: "HOST001",
+            hoster_name: "Tech Club",
+            category: "workshop",
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            title: "Cultural Night 2024",
+            venue: "Open Air Theatre",
+            event_date: "2024-12-25T18:00:00",
+            reg_link: "https://forms.google.com/cultural-night",
+            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e91e63'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='18'%3ECultural Night%3C/text%3E%3C/svg%3E",
+            description: "A spectacular evening celebrating diverse cultures through music, dance, and drama.",
+            hoster_id: "HOST002",
+            hoster_name: "Cultural Society",
+            category: "cultural",
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 3,
+            title: "Blockchain Technology Seminar",
+            venue: "Seminar Hall A",
+            event_date: "2024-12-22T14:00:00",
+            reg_link: "https://forms.google.com/blockchain-seminar",
+            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23ff5722'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='16'%3EBlockchain Seminar%3C/text%3E%3C/svg%3E",
+            description: "Industry experts discuss the future of blockchain technology and cryptocurrency.",
+            hoster_id: "HOST001",
+            hoster_name: "Tech Club",
+            category: "seminar",
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 4,
+            title: "Annual Sports Day",
+            venue: "Sports Complex",
+            event_date: "2024-12-30T08:00:00",
+            reg_link: "https://forms.google.com/sports-day",
+            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23ff9800'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='18'%3ESports Day%3C/text%3E%3C/svg%3E",
+            description: "Compete in various sports and win exciting prizes in our annual sports festival.",
+            hoster_id: "HOST003",
+            hoster_name: "Sports Committee",
+            category: "sports",
+            created_at: new Date().toISOString()
+          }
+        );
+      }
+
+      allEvents = demoEvents;
+      displayEventsByCategory(allEvents);
+    }
+
+    // Display events grouped by category (Netflix style)
+    function displayEventsByCategory(events) {
+      const container = document.getElementById('eventsContainer');
+      
+      if (!events || events.length === 0) {
+        container.innerHTML = `
+          <div class="no-events">
+            <h3>🎭 No Events Available</h3>
+            <p>No upcoming events at the moment. Check back later!</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group events by category
+      const eventsByCategory = events.reduce((acc, event) => {
+        const category = event.category || 'general';
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(event);
+        return acc;
+      }, {});
+
+      // Category metadata
+      const categoryInfo = {
+        technical: { name: 'Technical Events', icon: '💻', color: 'technical' },
+        cultural: { name: 'Cultural Events', icon: '🎭', color: 'cultural' },
+        sports: { name: 'Sports Events', icon: '⚽', color: 'sports' },
+        academic: { name: 'Academic Events', icon: '📚', color: 'academic' },
+        workshop: { name: 'Workshops', icon: '🛠️', color: 'workshop' },
+        seminar: { name: 'Seminars', icon: '🎤', color: 'seminar' },
+        general: { name: 'General Events', icon: '🎪', color: 'general' }
+      };
+
+      // Create HTML for each category
+      let html = '';
+      Object.keys(eventsByCategory).forEach(categoryKey => {
+        const categoryEvents = eventsByCategory[categoryKey];
+        const info = categoryInfo[categoryKey] || categoryInfo.general;
+        
+        html += `
+          <div class="category-section category-${info.color}">
+            <h2 class="category-title">
+              <span class="category-icon">${info.icon}</span>
+              ${info.name}
+              <span class="category-count">${categoryEvents.length}</span>
+            </h2>
+            <div class="events-row">
+              ${categoryEvents.map(event => createEventCard(event)).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Create individual event card
+    function createEventCard(event) {
+      return `
+        <div class="event-card">
+          ${event.brochure_url ? 
+            `<img src="${event.brochure_url}" alt="Event Brochure" class="event-image" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+             <div class="image-placeholder" style="display:none;">🎪</div>` :
+            `<div class="image-placeholder">🎪</div>`
+          }
+          
+          <div class="event-title">${event.title}</div>
+          
+          <div class="event-details">
+            <div class="event-detail">
+              <span class="event-detail-icon">📅</span>
+              ${new Date(event.event_date).toLocaleDateString()}
+            </div>
+            <div class="event-detail">
+              <span class="event-detail-icon">⏰</span>
+              ${new Date(event.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </div>
+            <div class="event-detail">
+              <span class="event-detail-icon">📍</span>
+              ${event.venue}
+            </div>
+            <div class="event-detail">
+              <span class="event-detail-icon">🏛️</span>
+              ${event.hoster_name || event.users?.name || 'Event Organizer'}
+            </div>
+          </div>
+          
+          ${event.description ? `
+            <div class="event-description">
+              ${event.description}
+            </div>
+          ` : ''}
+          
+          <a href="${event.reg_link}" target="_blank" class="register-btn">
+             Register Now
+          </a>
+        </div>
+      `;
+    }
+
+    // Search events
+    function searchEvents() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const filteredEvents = allEvents.filter(event => 
+        event.title.toLowerCase().includes(searchTerm) ||
+        event.venue.toLowerCase().includes(searchTerm) ||
+        event.category.toLowerCase().includes(searchTerm) ||
+        event.description?.toLowerCase().includes(searchTerm)
+      );
+      displayEventsByCategory(filteredEvents);
+    }
+
+    // Logout function
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Listen for storage changes (when hosters add events in demo mode)
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'demoEvents') {
+        loadEvents();
+      }
+    });
+
+    // ============ TIMETABLE FUNCTIONALITY ============
+
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const timeSlots = [
+      '9:00 AM - 10:00 AM',
+      '10:00 AM - 11:00 AM', 
+      '11:00 AM - 12:00 PM',
+      '12:00 PM - 1:00 PM',
+      '1:00 PM - 2:00 PM'
+    ];
+
+    let userTimetable = [];
+
+    // Load timetable on page load
+    function loadUserTimetable() {
+      const saved = localStorage.getItem(`timetable_${currentUser.user_id}`);
+      userTimetable = saved ? JSON.parse(saved) : [];
+    }
+
+    // Save timetable
+    function saveTimetable() {
+      localStorage.setItem(`timetable_${currentUser.user_id}`, JSON.stringify(userTimetable));
+    }
+
+    // Open timetable modal
+    function openTimetable() {
+      loadUserTimetable();
+      generateTimetableGrid();
+      document.getElementById('timetableModal').classList.add('active');
+    }
+
+    // Close timetable modal
+    function closeTimetable() {
+      document.getElementById('timetableModal').classList.remove('active');
+    }
+
+    // Generate timetable grid
+    function generateTimetableGrid() {
+      const grid = document.getElementById('timetableGrid');
+      let html = '<div class="time-header"></div>'; // Empty corner
+
+      // Day headers
+      days.forEach(day => {
+        html += `<div class="day-header">${day}</div>`;
+      });
+
+      // Time slots
+      timeSlots.forEach((time, timeIndex) => {
+        html += `<div class="time-header">${time}</div>`;
+        
+        days.forEach((day, dayIndex) => {
+          const slot = getSlotInfo(day, timeIndex);
+          let classes = 'time-slot';
+          let content = '<div style="color: #999;">Empty</div>';
+
+          if (slot.hasConflict) {
+            classes += ' has-conflict';
+            content = `
+              <div class="slot-title">⚠️ CONFLICT</div>
+              <div class="slot-type">Class: ${slot.className}</div>
+              <div class="slot-type">Event: ${slot.eventName}</div>
+            `;
+          } else if (slot.hasClass) {
+            classes += ' has-class';
+            content = `
+              <div class="slot-title">${slot.className}</div>
+              <div class="slot-type">Class</div>
+            `;
+          } else if (slot.hasEvent) {
+            classes += ' has-event';
+            content = `
+              <div class="slot-title">${slot.eventName}</div>
+              <div class="slot-type"> Event</div>
+            `;
+          }
+
+          html += `
+            <div class="${classes}" onclick="handleSlotClick('${day}', ${timeIndex})">
+              ${content}
+            </div>
+          `;
+        });
+      });
+
+      grid.innerHTML = html;
+    }
+
+    // Get slot information (class, event, conflict)
+    function getSlotInfo(day, timeIndex) {
+      const userClass = userTimetable.find(c => c.day === day && c.time === timeIndex);
+      
+      // Check if any event falls in this slot
+      let event = null;
+      for (const e of allEvents) {
+        const eventDate = new Date(e.event_date);
+        const eventDay = eventDate.toLocaleDateString('en-US', { weekday: 'long' });
+        const eventHour = eventDate.getHours();
+        
+        // Map event hour to time slot index (9am = 0, 10am = 1, etc)
+        const slotIndex = eventHour - 9;
+        
+        if (eventDay === day && slotIndex === timeIndex) {
+          event = e;
+          break;
+        }
+      }
+
+      return {
+        hasClass: !!userClass,
+        hasEvent: !!event,
+        hasConflict: !!userClass && !!event,
+        className: userClass?.name,
+        eventName: event?.title
+      };
+    }
+
+    // Handle slot click
+    function handleSlotClick(day, timeIndex) {
+      const slot = getSlotInfo(day, timeIndex);
+      
+      if (slot.hasClass) {
+        if (confirm(`Remove class "${slot.className}" from this slot?`)) {
+          userTimetable = userTimetable.filter(c => !(c.day === day && c.time === timeIndex));
+          saveTimetable();
+          generateTimetableGrid();
+        }
+      } else if (!slot.hasEvent) {
+        // Open add class modal with pre-selected day and time
+        document.getElementById('classDay').value = day;
+        document.getElementById('classTime').value = timeIndex;
+        openAddClass();
+      }
+    }
+
+    // Open add class modal
+    function openAddClass() {
+      document.getElementById('addClassModal').classList.add('active');
+    }
+
+    // Close add class modal
+    function closeAddClass() {
+      document.getElementById('addClassModal').classList.remove('active');
+      document.getElementById('classForm').reset();
+    }
+
+    // Handle add class form submission
+    document.getElementById('classForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const className = document.getElementById('className').value.trim();
+      const day = document.getElementById('classDay').value;
+      const time = parseInt(document.getElementById('classTime').value);
+
+      if (!className || !day || time === '') {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      // Check if slot already has a class
+      const existing = userTimetable.find(c => c.day === day && c.time === time);
+      if (existing) {
+        alert('This slot already has a class. Remove it first.');
+        return;
+      }
+
+      // Add class
+      userTimetable.push({ name: className, day, time });
+      saveTimetable();
+      generateTimetableGrid();
+      closeAddClass();
+      
+      // Check for conflicts
+      const slot = getSlotInfo(day, time);
+      if (slot.hasConflict) {
+        alert(` WARNING: This class conflicts with the event "${slot.eventName}"!`);
+      }
+    });
+
+    // Clear timetable
+    function clearTimetable() {
+      if (confirm(' Are you sure you want to clear your entire timetable? This cannot be undone.')) {
+        userTimetable = [];
+        saveTimetable();
+        generateTimetableGrid();
+        alert(' Timetable cleared successfully!');
+      }
+    }
+
+    // ============ OD GENERATOR FUNCTIONALITY ============
+
+    let selectedEvent = null;
+
+    // Open OD generator
+    function openODGenerator() {
+      // Populate event dropdown
+      const eventSelect = document.getElementById('odEventSelect');
+      eventSelect.innerHTML = '<option value=""> Choose an event </option>';
+      
+      allEvents.forEach((event, index) => {
+        eventSelect.innerHTML += `<option value="${index}">${event.title}</option>`;
+      });
+
+      // Pre-fill user data if available
+      if (currentUser) {
+        document.getElementById('odStudentName').value = currentUser.name || '';
+      }
+
+      document.getElementById('odModal').classList.add('active');
+    }
+
+    // Close OD generator
+    function closeODGenerator() {
+      document.getElementById('odModal').classList.remove('active');
+      document.getElementById('odPreview').classList.remove('active');
+      document.getElementById('downloadODBtn').style.display = 'none';
+    }
+
+    // Generate OD preview
+    function generateODPreview() {
+      const eventIndex = document.getElementById('odEventSelect').value;
+      const studentName = document.getElementById('odStudentName').value.trim();
+      const rollNumber = document.getElementById('odRollNumber').value.trim();
+      const department = document.getElementById('odDepartment').value.trim();
+      const year = document.getElementById('odYear').value;
+
+      if (!eventIndex || !studentName || !rollNumber || !department || !year) {
+        alert('Please fill in all fields!');
+        return;
+      }
+
+      selectedEvent = allEvents[eventIndex];
+      const eventDate = new Date(selectedEvent.event_date);
+      const today = new Date();
+
+      const previewHTML = `
+        <div class="od-letterhead">
+          <h3 style="margin: 0; color: #667eea;"> [Sathyabama University]</h3>
+          <p style="margin: 5px 0;">[semmanchery,Chennai]</p>
+          <p style="margin: 5px 0;">Email: info@sist.edu | Phone: +91-123456789</p>
+        </div>
+
+        <div style="text-align: right; margin: 20px 0;">
+          <strong>Date:</strong> ${today.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
+        </div>
+
+        <div style="margin: 20px 0;">
+          <strong>To,</strong><br>
+          The Head of Department,<br>
+          Department of ${department},<br>
+          [Sathyabama University]
+        </div>
+
+        <div style="margin: 20px 0;">
+          <strong>Subject:</strong> Request for On Duty (OD) for attending "${selectedEvent.title}"
+        </div>
+
+        <div style="margin: 20px 0;">
+          <p>Respected Sir/Madam,</p>
+          
+          <p style="text-indent: 50px;">
+            I am <strong>${studentName}</strong>, a student of <strong>${year} Year, ${department}</strong> 
+            (Roll No: <strong>${rollNumber}</strong>). I am writing to request an On Duty (OD) permission 
+            to attend the event titled <strong>"${selectedEvent.title}"</strong>.
+          </p>
+
+          <p style="text-indent: 50px;">
+            The event is scheduled on <strong>${eventDate.toLocaleDateString('en-IN', { 
+              weekday: 'long', 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            })}</strong> at <strong>${eventDate.toLocaleTimeString('en-IN', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              hour12: true 
+            })}</strong> at <strong>${selectedEvent.venue}</strong>.
+          </p>
+
+          <p style="text-indent: 50px;">
+            This event falls under the <strong>${selectedEvent.category}</strong> category and will provide 
+            valuable learning and networking opportunities. I believe participating in this event will 
+            enhance my academic and professional development.
+          </p>
+
+          <p style="text-indent: 50px;">
+            I kindly request you to grant me On Duty permission for the mentioned date and time. 
+            I assure you that I will compensate for any missed classes and complete all pending assignments.
+          </p>
+
+          <p>
+            Thanking you in anticipation.
+          </p>
+        </div>
+
+        <div class="od-signature">
+          <p style="margin: 40px 0 5px 0;">Yours sincerely,</p>
+          <p style="margin: 5px 0;"><strong>${studentName}</strong></p>
+          <p style="margin: 5px 0;">Roll No: ${rollNumber}</p>
+          <p style="margin: 5px 0;">${year} Year, ${department}</p>
+          <p style="margin: 5px 0;">Date: ${today.toLocaleDateString('en-IN')}</p>
+        </div>
+
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+          <p style="font-size: 12px; color: #666; margin: 5px 0;">
+            <strong>Event Details:</strong>
+          </p>
+          <p style="font-size: 12px; color: #666; margin: 3px 0;">
+            Event: ${selectedEvent.title} | Venue: ${selectedEvent.venue}
+          </p>
+          <p style="font-size: 12px; color: #666; margin: 3px 0;">
+            Organizer: ${selectedEvent.hoster_name || selectedEvent.hoster_id} | 
+            Category: ${selectedEvent.category}
+          </p>
+        </div>
+      `;
+
+      document.getElementById('odPreview').innerHTML = previewHTML;
+      document.getElementById('odPreview').classList.add('active');
+      document.getElementById('downloadODBtn').style.display = 'block';
+
+      // Scroll to preview
+      document.getElementById('odPreview').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Download OD as PDF
+    function downloadOD() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const studentName = document.getElementById('odStudentName').value.trim();
+      const rollNumber = document.getElementById('odRollNumber').value.trim();
+      const department = document.getElementById('odDepartment').value.trim();
+      const year = document.getElementById('odYear').value;
+      const eventDate = new Date(selectedEvent.event_date);
+      const today = new Date();
+
+      // Page margins
+      const margin = 20;
+      const pageWidth = 210;
+      const contentWidth = pageWidth - (2 * margin);
+      let yPos = 20;
+
+      // Set default text color to black
+      pdf.setTextColor(0, 0, 0);
+
+      // Letterhead - College Name
+      pdf.setFontSize(18);
+      pdf.setFont('times', 'bold');
+      pdf.setTextColor(102, 126, 234); // Purple color
+      pdf.text('[Sathyabama University]', pageWidth / 2, yPos, { align: 'center' });
+      
+      yPos += 8;
+      pdf.setFontSize(10);
+      pdf.setFont('times', 'normal');
+      pdf.setTextColor(0, 0, 0); // Black
+      pdf.text('[College Addr, State - PIN]', pageWidth / 2, yPos, { align: 'center' });
+      
+      yPos += 5;
+      pdf.text('Email: info@sist.edu | Phone: +91-1234567890', pageWidth / 2, yPos, { align: 'center' });
+      
+      // Horizontal line
+      yPos += 5;
+      pdf.setLineWidth(1);
+      pdf.setDrawColor(102, 126, 234);
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
+      pdf.setDrawColor(0, 0, 0); // Reset to black
+      
+      yPos += 12;
+
+      // Date (right aligned)
+      pdf.setFontSize(12);
+      pdf.setFont('times', 'bold');
+      pdf.text('Date: ', pageWidth - margin - 60, yPos);
+      pdf.setFont('times', 'normal');
+      pdf.text(today.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }), 
+               pageWidth - margin - 45, yPos);
+      
+      yPos += 15;
+
+      // To section
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(12);
+      pdf.text('To,', margin, yPos);
+      yPos += 7;
+      
+      pdf.setFont('times', 'normal');
+      pdf.text('The Head of Department,', margin, yPos);
+      yPos += 6;
+      pdf.text('Department of ' + department + ',', margin, yPos);
+      yPos += 6;
+      pdf.text('[Sathyabama university]', margin, yPos);
+      
+      yPos += 12;
+
+      // Subject - Bold and underlined
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(12);
+      const subjectLabel = 'Subject: ';
+      const subjectText = 'Request for On Duty (OD) for attending "' + selectedEvent.title + '"';
+      
+      pdf.text(subjectLabel, margin, yPos);
+      const subjectWidth = pdf.getTextWidth(subjectLabel);
+      
+      pdf.setFont('times', 'normal');
+      const subjectLines = pdf.splitTextToSize(subjectText, contentWidth - subjectWidth);
+      pdf.text(subjectLines, margin + subjectWidth, yPos);
+      
+      // Underline subject
+      const totalSubjectHeight = subjectLines.length * 6;
+      pdf.setLineWidth(0.3);
+      pdf.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
+      
+      yPos += totalSubjectHeight + 10;
+
+      // Body
+      pdf.setFont('times', 'normal');
+      pdf.setFontSize(12);
+      pdf.text('Respected Sir/Madam,', margin, yPos);
+      yPos += 10;
+
+      // Paragraph 1
+      const para1 = '          I am ' + studentName + ', a student of ' + year + ' Year, ' + department + ' (Roll No: ' + rollNumber + '). I am writing to request an On Duty (OD) permission to attend the event titled "' + selectedEvent.title + '".';
+      const para1Lines = pdf.splitTextToSize(para1, contentWidth);
+      pdf.text(para1Lines, margin, yPos);
+      yPos += (para1Lines.length * 6) + 6;
+
+      // Paragraph 2
+      const para2 = '          The event is scheduled on ' + eventDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' at ' + eventDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) + ' at ' + selectedEvent.venue + '.';
+      const para2Lines = pdf.splitTextToSize(para2, contentWidth);
+      pdf.text(para2Lines, margin, yPos);
+      yPos += (para2Lines.length * 6) + 6;
+
+      // Paragraph 3
+      const para3 = '          This event falls under the ' + selectedEvent.category + ' category and will provide valuable learning and networking opportunities. I believe participating in this event will enhance my academic and professional development.';
+      const para3Lines = pdf.splitTextToSize(para3, contentWidth);
+      pdf.text(para3Lines, margin, yPos);
+      yPos += (para3Lines.length * 6) + 6;
+
+      // Paragraph 4
+      const para4 = '          I kindly request you to grant me On Duty permission for the mentioned date and time. I assure you that I will compensate for any missed classes.';
+      const para4Lines = pdf.splitTextToSize(para4, contentWidth);
+      pdf.text(para4Lines, margin, yPos);
+      yPos += (para4Lines.length * 6) + 8;
+
+      pdf.text('Thanking you.', margin, yPos);
+      yPos += 20;
+
+      // Signature section
+      const sigX = pageWidth - margin - 60;
+      pdf.setFont('times', 'italic');
+      pdf.text('Yours sincerely,', sigX, yPos);
+      yPos += 15;
+      
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(13);
+      pdf.text(studentName, sigX, yPos);
+      yPos += 7;
+      
+      pdf.setFont('times', 'normal');
+      pdf.setFontSize(11);
+      pdf.text('Roll No: ' + rollNumber, sigX, yPos);
+      yPos += 6;
+      pdf.text(year + ' Year, ' + department, sigX, yPos);
+      yPos += 6;
+      pdf.text('Date: ' + today.toLocaleDateString('en-IN'), sigX, yPos);
+
+      // Footer with event details
+      yPos = 275;
+      pdf.setFontSize(9);
+      pdf.setTextColor(80, 80, 80);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPos - 5, pageWidth - margin, yPos - 5);
+      
+      const footerText1 = 'Event: ' + selectedEvent.title + ' | Venue: ' + selectedEvent.venue;
+      const footerText2 = 'Organizer: ' + (selectedEvent.hoster_name || selectedEvent.hoster_id) + ' | Category: ' + selectedEvent.category;
+      
+      pdf.text(footerText1, pageWidth / 2, yPos, { align: 'center' });
+      pdf.text(footerText2, pageWidth / 2, yPos + 4, { align: 'center' });
+
+      // Save PDF
+      const fileName = 'OD_' + rollNumber + '_' + selectedEvent.title.replace(/[^a-z0-9]/gi, '_') + '.pdf';
+      pdf.save(fileName);
+
+      alert(' OD Letter downloaded successfully!');
+    }
+  </script>
+</body>
+</html>

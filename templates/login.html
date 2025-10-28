@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - College Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #fbeaff, #e8f0ff, #fff0f5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(218, 143, 255, 0.2);
+      border: 1px solid #f3d9ff;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #8e44ad;
+      margin-bottom: 10px;
+    }
+
+    .back-btn {
+      background: #6c757d;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #5a6268;
+    }
+
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      gap: 5px;
+    }
+
+    .toggle-buttons button {
+      flex: 1;
+      padding: 12px;
+      background: #e8d9f1;
+      color: #8e44ad;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+      transition: all 0.3s;
+      border-radius: 8px;
+    }
+
+    .toggle-buttons button.active {
+      background: #d16ba5;
+      color: white;
+    }
+
+    .toggle-buttons button:hover:not(.active) {
+      background: #d4c2e0;
+    }
+
+    .login-form {
+      display: none;
+      flex-direction: column;
+    }
+
+    .login-form.active {
+      display: flex;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #d16ba5;
+    }
+
+    button.submit-btn {
+      width: 100%;
+      background-color: #d16ba5;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+
+    button.submit-btn:hover:not(:disabled) {
+      background-color: #c45099;
+    }
+
+    button.submit-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .note {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 10px;
+      color: #888;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      background: #ffeaea;
+      border: 1px solid #f8d7da;
+    }
+
+    .success-message {
+      color: #27ae60;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+
+    .loading-message {
+      color: #0c5460;
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+    }
+
+    .demo-credentials {
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #856404;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    .demo-credentials h4 {
+      margin: 0 0 10px 0;
+      color: #856404;
+    }
+
+    .config-warning {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .supabase-connected {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <h2>🔐 Login to Event Connect</h2>
+
+    <!-- Configuration Warning -->
+    <div id="configWarning" class="config-warning">
+      <strong>⚠️ Supabase Not Configured</strong>
+      Please update your Supabase URL and API key in the code, or the demo mode will be used.
+    </div>
+
+    <!-- Supabase Connected Message -->
+    <div id="supabaseConnected" class="supabase-connected" style="display:none;">
+      <strong>✅ Connected to Supabase Database</strong>
+      Using live database for authentication and data storage.
+    </div>
+
+    <!-- Toggle Buttons - NOW WITH ADMIN -->
+    <div class="toggle-buttons">
+      <button id="studentBtn" class="toggle-btn active">Student/Staff</button>
+      <button id="hosterBtn" class="toggle-btn">Hoster</button>
+      <button id="adminBtn" class="toggle-btn">Admin</button>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <!-- Student/Staff Form -->
+    <div id="studentForm" class="login-form active">
+      <input type="text" id="studentId" placeholder="Enter Student or Staff ID" required>
+      <input type="date" id="studentDOB" required>
+      <button type="button" class="submit-btn" onclick="loginStudent()">🚀 Login</button>
+      <div class="note">Students & staff use your ID and date of birth to login.</div>
+    </div>
+
+    <!-- Hoster Form -->
+    <div id="hosterForm" class="login-form">
+      <input type="text" id="hosterId" placeholder="Enter Hoster ID" required>
+      <input type="date" id="hosterDOB" required>
+      <button type="button" class="submit-btn" onclick="loginHoster()">🎯 Login as Hoster</button>
+      <div class="note">Only approved event organizers can login here.</div>
+    </div>
+
+    <!-- Admin Form -->
+    <div id="adminForm" class="login-form">
+      <input type="text" id="adminId" placeholder="Enter Admin ID" required>
+      <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
+      <button type="button" class="submit-btn" onclick="loginAdmin()">🔐 Admin Login</button>
+      <div class="note">Admin access only. Contact system administrator for credentials.</div>
+    </div>
+
+    <!-- Demo Credentials -->
+    <div class="demo-credentials">
+      <h4>🧪 Demo Credentials:</h4>
+      <strong>Students:</strong><br>
+      • ID: ST001, DOB: 2000-01-15<br>
+      • ID: ST002, DOB: 1999-05-20<br><br>
+      <strong>Staff:</strong><br>
+      • ID: STAFF001, DOB: 1980-03-10<br><br>
+      <strong>Hosters:</strong><br>
+      • ID: HOST001, DOB: 1995-08-25<br>
+      • ID: HOST002, DOB: 1996-12-05<br><br>
+      <strong>Admin:</strong><br>
+      • ID: ADMIN, Password: admin123
+    </div>
+  </div>
+
+  <script>
+    // 🔥 UPDATE THIS WITH YOUR ACTUAL ANON KEY
+    const SUPABASE_URL = 'https://erqzpxeqshcbzvoshqvm.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycXpweGVxc2hjYnp2b3NocXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NzI5MTUsImV4cCI6MjA3MzM0ODkxNX0.nUgUJtfQjv6YgFYzhiIA2ltndsyjClKf8o1v09OsCKE'
+    
+    let supabase = null;
+    let useSupabase = false;
+
+    // Initialize Supabase
+    try {
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && 
+          SUPABASE_URL.includes('supabase.co') && 
+          SUPABASE_ANON_KEY.startsWith('eyJ') &&
+          SUPABASE_ANON_KEY !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycXpweGVxc2hjYnp2b3NocXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NzI5MTUsImV4cCI6MjA3MzM0ODkxNX0.nUgUJtfQjv6YgFYzhiIA2ltndsyjClKf8o1v09OsCKE') {
+        
+        console.log('🔄 Initializing Supabase...');
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        useSupabase = true;
+        
+        document.getElementById('configWarning').style.display = 'none';
+        document.getElementById('supabaseConnected').style.display = 'block';
+        
+        console.log('✅ Supabase initialized successfully!');
+      } else {
+        console.log('❌ Supabase credentials not properly set');
+      }
+    } catch (error) {
+      console.log('❌ Supabase initialization failed:', error);
+    }
+
+    // Demo users (fallback when Supabase not configured)
+    const demoUsers = {
+      students: {
+        'ST001': { dob: '2000-01-15', name: 'John Doe', type: 'student' },
+        'ST002': { dob: '1999-05-20', name: 'Jane Smith', type: 'student' }
+      },
+      staff: {
+        'STAFF001': { dob: '1980-03-10', name: 'Prof. Kumar', type: 'staff' }
+      },
+      hosters: {
+        'HOST001': { dob: '1995-08-25', name: 'Tech Club', type: 'hoster' },
+        'HOST002': { dob: '1996-12-05', name: 'Cultural Society', type: 'hoster' }
+      },
+      admin: {
+        'ADMIN': { password: 'admin123', name: 'System Administrator', type: 'admin' }
+      }
+    };
+
+    // Get DOM elements
+    const studentBtn = document.getElementById('studentBtn');
+    const hosterBtn = document.getElementById('hosterBtn');
+    const adminBtn = document.getElementById('adminBtn');
+    const studentForm = document.getElementById('studentForm');
+    const hosterForm = document.getElementById('hosterForm');
+    const adminForm = document.getElementById('adminForm');
+    const messageDiv = document.getElementById('message');
+
+    // Toggle functionality
+    studentBtn.addEventListener('click', function() {
+      studentBtn.classList.add('active');
+      hosterBtn.classList.remove('active');
+      adminBtn.classList.remove('active');
+      studentForm.classList.add('active');
+      hosterForm.classList.remove('active');
+      adminForm.classList.remove('active');
+      clearMessage();
+    });
+
+    hosterBtn.addEventListener('click', function() {
+      hosterBtn.classList.add('active');
+      studentBtn.classList.remove('active');
+      adminBtn.classList.remove('active');
+      hosterForm.classList.add('active');
+      studentForm.classList.remove('active');
+      adminForm.classList.remove('active');
+      clearMessage();
+    });
+
+    adminBtn.addEventListener('click', function() {
+      adminBtn.classList.add('active');
+      studentBtn.classList.remove('active');
+      hosterBtn.classList.remove('active');
+      adminForm.classList.add('active');
+      studentForm.classList.remove('active');
+      hosterForm.classList.remove('active');
+      clearMessage();
+    });
+
+    // Student login function
+    async function loginStudent() {
+      const userId = document.getElementById('studentId').value.trim();
+      const dob = document.getElementById('studentDOB').value;
+      
+      if (!userId || !dob) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      if (useSupabase) {
+        await loginWithSupabase(userId, dob, ['student', 'staff']);
+      } else {
+        loginWithDemo(userId, dob, ['student', 'staff']);
+      }
+    }
+
+    // Hoster login function
+    async function loginHoster() {
+      const userId = document.getElementById('hosterId').value.trim();
+      const dob = document.getElementById('hosterDOB').value;
+      
+      if (!userId || !dob) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      if (useSupabase) {
+        await loginWithSupabase(userId, dob, ['hoster']);
+      } else {
+        loginWithDemo(userId, dob, ['hoster']);
+      }
+    }
+
+    // Admin login function
+    async function loginAdmin() {
+      const userId = document.getElementById('adminId').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      
+      if (!userId || !password) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      if (useSupabase) {
+        await loginAdminSupabase(userId, password);
+      } else {
+        loginAdminDemo(userId, password);
+      }
+    }
+
+    // Supabase login
+    async function loginWithSupabase(userId, dob, allowedTypes) {
+      try {
+        showMessage('Authenticating with Supabase...', 'loading');
+        setLoading(true);
+
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('dob', dob)
+          .in('user_type', allowedTypes)
+          .single();
+
+        if (error || !user) {
+          showMessage('Invalid credentials. Please check your ID and date of birth.', 'error');
+          return;
+        }
+
+        loginSuccess(user);
+
+      } catch (error) {
+        console.error('Supabase login error:', error);
+        showMessage(`Login error: ${error.message}`, 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Supabase admin login
+    async function loginAdminSupabase(userId, password) {
+      try {
+        showMessage('Authenticating admin...', 'loading');
+        setLoading(true);
+
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('password', password)
+          .eq('user_type', 'admin')
+          .single();
+
+        if (error || !user) {
+          showMessage('Invalid admin credentials.', 'error');
+          return;
+        }
+
+        loginSuccess(user);
+
+      } catch (error) {
+        console.error('Admin login error:', error);
+        showMessage(`Login error: ${error.message}`, 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Demo login (fallback)
+    function loginWithDemo(userId, dob, allowedTypes) {
+      let user = null;
+
+      if (allowedTypes.includes('student') && demoUsers.students[userId] && demoUsers.students[userId].dob === dob) {
+        user = {
+          user_id: userId,
+          name: demoUsers.students[userId].name,
+          user_type: demoUsers.students[userId].type,
+          dob: dob
+        };
+      }
+      else if (allowedTypes.includes('staff') && demoUsers.staff[userId] && demoUsers.staff[userId].dob === dob) {
+        user = {
+          user_id: userId,
+          name: demoUsers.staff[userId].name,
+          user_type: demoUsers.staff[userId].type,
+          dob: dob
+        };
+      }
+      else if (allowedTypes.includes('hoster') && demoUsers.hosters[userId] && demoUsers.hosters[userId].dob === dob) {
+        user = {
+          user_id: userId,
+          name: demoUsers.hosters[userId].name,
+          user_type: demoUsers.hosters[userId].type,
+          dob: dob
+        };
+      }
+
+      if (user) {
+        loginSuccess(user);
+      } else {
+        showMessage('Invalid credentials. Please check your ID and date of birth.', 'error');
+      }
+    }
+
+    // Demo admin login
+    function loginAdminDemo(userId, password) {
+      if (demoUsers.admin[userId] && demoUsers.admin[userId].password === password) {
+        const user = {
+          user_id: userId,
+          name: demoUsers.admin[userId].name,
+          user_type: demoUsers.admin[userId].type
+        };
+        loginSuccess(user);
+      } else {
+        showMessage('Invalid admin credentials.', 'error');
+      }
+    }
+
+    // Success login handler
+    function loginSuccess(user) {
+      sessionStorage.setItem('currentUser', JSON.stringify(user));
+      
+      showMessage('Login successful! Redirecting...', 'success');
+
+      setTimeout(() => {
+        if (user.user_type === 'hoster') {
+          window.location.href = 'hostevent.html';
+        } else if (user.user_type === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'events.html';
+        }
+      }, 2000);
+    }
+
+    // Utility functions
+    function showMessage(text, type) {
+      messageDiv.className = `message ${type}-message`;
+      messageDiv.textContent = text;
+      messageDiv.style.display = 'block';
+    }
+
+    function clearMessage() {
+      messageDiv.style.display = 'none';
+    }
+
+    function setLoading(loading) {
+      const submitBtns = document.querySelectorAll('.submit-btn');
+      submitBtns.forEach(btn => {
+        btn.disabled = loading;
+      });
+    }
+
+    // Check if already logged in
+    window.addEventListener('load', () => {
+      const currentUser = sessionStorage.getItem('currentUser');
+      if (currentUser) {
+        const user = JSON.parse(currentUser);
+        showMessage('You are already logged in! Redirecting...', 'success');
+        setTimeout(() => {
+          if (user.user_type === 'hoster') {
+            window.location.href = 'hostevent.html';
+          } else if (user.user_type === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'events.html';
+          }
+        }, 1500);
+      }
+    });
+  </script>
+
+</body>
+</html>
