@@ -567,7 +567,7 @@
     .page-title h1 {
       font-size: 3rem;
       margin-bottom: 10px;
-      background: linear-gradient(135deg, #ea66c7 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -620,7 +620,7 @@
 
     .search-input:focus {
       outline: none;
-      border-color: #ea66d8;
+      border-color: #667eea;
       box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
     }
 
@@ -682,7 +682,7 @@
     }
 
     .events-row::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #ea66df, #764ba2);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       border-radius: 10px;
     }
 
@@ -701,7 +701,7 @@
     .event-card:hover {
       transform: translateY(-10px) scale(1.02);
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(234, 102, 168, 0.5);
+      border-color: rgba(102, 126, 234, 0.5);
     }
 
     .event-image {
@@ -720,7 +720,7 @@
     .image-placeholder {
       width: 100%;
       height: 180px;
-      background: linear-gradient(135deg, #ea66c5 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-radius: 10px;
       margin-bottom: 15px;
       display: flex;
@@ -853,14 +853,14 @@
   <div class="header">
     <div class="header-content">
       <div class="user-welcome">
-        Welcome, <span id="userName">Student</span>! s
+        Welcome, <span id="userName">Student</span>! 👨‍🎓
       </div>
       <div style="display: flex; gap: 15px; align-items: center;">
         <button onclick="openODGenerator()" class="od-btn" title="Generate OD Letter">
-          OD 
+          📝
         </button>
         <button onclick="openTimetable()" class="timetable-btn" title="Timetable">
-          TT
+          📅
         </button>
         <button onclick="logout()" class="logout-btn">Logout</button>
       </div>
@@ -868,17 +868,17 @@
   </div>
 
   <div class="page-title">
-    <h1> Event connect</h1>
+    <h1>🎓 Campus Events</h1>
     <p>Discover and register for exciting events happening on campus</p>
   </div>
 
   <div class="container">
     <div id="configInfo" class="config-info">
-      <strong>ℹ Demo Mode:</strong> Showing sample events. Configure Supabase for live data.
+      <strong>ℹ️ Demo Mode:</strong> Showing sample events. Configure Supabase for live data.
     </div>
 
     <div class="search-section">
-      <input type="text" id="searchInput" class="search-input" placeholder=" Search events..." onkeyup="searchEvents()">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search events..." onkeyup="searchEvents()">
       <button onclick="loadEvents()" class="refresh-btn">🔄 Refresh Events</button>
     </div>
 
@@ -891,13 +891,13 @@
   <div id="timetableModal" class="timetable-modal">
     <div class="timetable-container">
       <div class="timetable-header">
-        <h2> My Timetable</h2>
+        <h2>📅 My Timetable</h2>
         <button onclick="closeTimetable()" class="close-modal-btn">✕ Close</button>
       </div>
 
       <div style="text-align: center; margin-bottom: 20px;">
         <button onclick="openAddClass()" class="add-class-btn">➕ Add Class</button>
-        <button onclick="clearTimetable()" class="clear-btn"> Clear All</button>
+        <button onclick="clearTimetable()" class="clear-btn">🗑️ Clear All</button>
       </div>
 
       <div class="timetable-grid" id="timetableGrid">
@@ -915,7 +915,7 @@
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background: linear-gradient(135deg, #ffa500, #ff8c00); border: 3px solid #ff0000;"></div>
-          <span> Conflict</span>
+          <span>⚠️ Conflict</span>
         </div>
       </div>
     </div>
@@ -925,7 +925,7 @@
   <div id="odModal" class="od-modal">
     <div class="od-container">
       <div class="od-header">
-        <h2> Generate OD Letter</h2>
+        <h2>📝 Generate OD Letter</h2>
         <button onclick="closeODGenerator()" class="close-modal-btn">✕ Close</button>
       </div>
 
@@ -963,7 +963,7 @@
           </select>
         </div>
 
-        <button onclick="generateODPreview()" class="generate-od-btn">Generate OD letter</button>
+        <button onclick="generateODPreview()" class="generate-od-btn">📄 Generate Preview</button>
       </div>
 
       <!-- OD Preview -->
@@ -972,7 +972,7 @@
       </div>
 
       <button id="downloadODBtn" onclick="downloadOD()" class="download-od-btn" style="display:none;">
-         Download OD Letter (PDF)
+        📥 Download OD Letter (PDF)
       </button>
     </div>
   </div>
@@ -1019,7 +1019,7 @@
   <script>
     // 🔥🔥🔥 PASTE YOUR SUPABASE ANON KEY HERE 🔥🔥🔥
     const SUPABASE_URL = 'https://erqzpxeqshcbzvoshqvm.supabase.co';
-    const SUPABASE_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycXpweGVxc2hjYnp2b3NocXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NzI5MTUsImV4cCI6MjA3MzM0ODkxNX0.nUgUJtfQjv6YgFYzhiIA2ltndsyjClKf8o1v09OsCKE';
     
     let supabase = null;
     let currentUser = null;
@@ -1303,7 +1303,7 @@
           ` : ''}
           
           <a href="${event.reg_link}" target="_blank" class="register-btn">
-             Register Now
+            🚀 Register Now
           </a>
         </div>
       `;
@@ -1402,13 +1402,13 @@
             classes += ' has-class';
             content = `
               <div class="slot-title">${slot.className}</div>
-              <div class="slot-type">Class</div>
+              <div class="slot-type">📚 Class</div>
             `;
           } else if (slot.hasEvent) {
             classes += ' has-event';
             content = `
               <div class="slot-title">${slot.eventName}</div>
-              <div class="slot-type"> Event</div>
+              <div class="slot-type">🎪 Event</div>
             `;
           }
 
@@ -1510,17 +1510,17 @@
       // Check for conflicts
       const slot = getSlotInfo(day, time);
       if (slot.hasConflict) {
-        alert(` WARNING: This class conflicts with the event "${slot.eventName}"!`);
+        alert(`⚠️ WARNING: This class conflicts with the event "${slot.eventName}"!`);
       }
     });
 
     // Clear timetable
     function clearTimetable() {
-      if (confirm(' Are you sure you want to clear your entire timetable? This cannot be undone.')) {
+      if (confirm('⚠️ Are you sure you want to clear your entire timetable? This cannot be undone.')) {
         userTimetable = [];
         saveTimetable();
         generateTimetableGrid();
-        alert(' Timetable cleared successfully!');
+        alert('✅ Timetable cleared successfully!');
       }
     }
 
@@ -1532,7 +1532,7 @@
     function openODGenerator() {
       // Populate event dropdown
       const eventSelect = document.getElementById('odEventSelect');
-      eventSelect.innerHTML = '<option value=""> Choose an event </option>';
+      eventSelect.innerHTML = '<option value="">-- Choose an event --</option>';
       
       allEvents.forEach((event, index) => {
         eventSelect.innerHTML += `<option value="${index}">${event.title}</option>`;
@@ -1562,7 +1562,7 @@
       const year = document.getElementById('odYear').value;
 
       if (!eventIndex || !studentName || !rollNumber || !department || !year) {
-        alert('Please fill in all fields!');
+        alert('⚠️ Please fill in all fields!');
         return;
       }
 
@@ -1572,9 +1572,9 @@
 
       const previewHTML = `
         <div class="od-letterhead">
-          <h3 style="margin: 0; color: #667eea;"> [Sathyabama University]</h3>
-          <p style="margin: 5px 0;">[semmanchery,Chennai]</p>
-          <p style="margin: 5px 0;">Email: info@sist.edu | Phone: +91-123456789</p>
+          <h3 style="margin: 0; color: #667eea;">🎓 [YOUR COLLEGE NAME]</h3>
+          <p style="margin: 5px 0;">[College Address]</p>
+          <p style="margin: 5px 0;">Email: info@yourcollege.edu | Phone: +91-XXXXXXXXXX</p>
         </div>
 
         <div style="text-align: right; margin: 20px 0;">
@@ -1585,7 +1585,7 @@
           <strong>To,</strong><br>
           The Head of Department,<br>
           Department of ${department},<br>
-          [Sathyabama University]
+          [Your College Name]
         </div>
 
         <div style="margin: 20px 0;">
@@ -1685,16 +1685,16 @@
       pdf.setFontSize(18);
       pdf.setFont('times', 'bold');
       pdf.setTextColor(102, 126, 234); // Purple color
-      pdf.text('[Sathyabama University]', pageWidth / 2, yPos, { align: 'center' });
+      pdf.text('[YOUR COLLEGE NAME]', pageWidth / 2, yPos, { align: 'center' });
       
       yPos += 8;
       pdf.setFontSize(10);
       pdf.setFont('times', 'normal');
       pdf.setTextColor(0, 0, 0); // Black
-      pdf.text('[College Addr, State - PIN]', pageWidth / 2, yPos, { align: 'center' });
+      pdf.text('[College Address, City, State - PIN]', pageWidth / 2, yPos, { align: 'center' });
       
       yPos += 5;
-      pdf.text('Email: info@sist.edu | Phone: +91-1234567890', pageWidth / 2, yPos, { align: 'center' });
+      pdf.text('Email: info@yourcollege.edu | Phone: +91-XXXXXXXXXX', pageWidth / 2, yPos, { align: 'center' });
       
       // Horizontal line
       yPos += 5;
@@ -1726,7 +1726,7 @@
       yPos += 6;
       pdf.text('Department of ' + department + ',', margin, yPos);
       yPos += 6;
-      pdf.text('[Sathyabama university]', margin, yPos);
+      pdf.text('[Your College Name]', margin, yPos);
       
       yPos += 12;
 
@@ -1775,12 +1775,12 @@
       yPos += (para3Lines.length * 6) + 6;
 
       // Paragraph 4
-      const para4 = '          I kindly request you to grant me On Duty permission for the mentioned date and time. I assure you that I will compensate for any missed classes.';
+      const para4 = '          I kindly request you to grant me On Duty permission for the mentioned date and time. I assure you that I will compensate for any missed classes and complete all pending assignments.';
       const para4Lines = pdf.splitTextToSize(para4, contentWidth);
       pdf.text(para4Lines, margin, yPos);
       yPos += (para4Lines.length * 6) + 8;
 
-      pdf.text('Thanking you.', margin, yPos);
+      pdf.text('Thanking you in anticipation.', margin, yPos);
       yPos += 20;
 
       // Signature section
@@ -1819,7 +1819,7 @@
       const fileName = 'OD_' + rollNumber + '_' + selectedEvent.title.replace(/[^a-z0-9]/gi, '_') + '.pdf';
       pdf.save(fileName);
 
-      alert(' OD Letter downloaded successfully!');
+      alert('✅ OD Letter downloaded successfully!');
     }
   </script>
 </body>
