@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Campus Events - College Events</title>
+  <title>Welcome to Event Connect</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     * {
@@ -18,18 +15,18 @@
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: #0f0f0f;
-      color: white;
+      background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #ffffff 100%);
+      color: #333;
       min-height: 100vh;
     }
 
     .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #ec407a 0%, #ba68c8 100%);
       padding: 20px;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 10px rgba(236, 64, 122, 0.3);
     }
 
     .header-content {
@@ -42,13 +39,13 @@
       gap: 20px;
     }
 
-    .user-welcome {
+    .logo {
       color: white;
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
     }
 
-    .logout-btn {
+    .login-btn {
       background: rgba(255,255,255,0.2);
       color: white;
       padding: 10px 20px;
@@ -58,300 +55,116 @@
       font-weight: bold;
       transition: all 0.3s;
       backdrop-filter: blur(10px);
+      text-decoration: none;
+      display: inline-block;
     }
 
-    .logout-btn:hover {
+    .login-btn:hover {
       background: rgba(255,255,255,0.3);
       transform: translateY(-2px);
     }
 
-    .page-title {
+    .hero {
       text-align: center;
-      padding: 40px 20px;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      padding: 80px 20px;
+      background: rgba(252, 228, 236, 0.5);
     }
 
-    .page-title h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ec407a 0%, #ba68c8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    .page-title p {
-      color: #ccc;
-      font-size: 1.2rem;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .config-info {
-      background: rgba(23, 162, 184, 0.2);
-      border: 1px solid rgba(23, 162, 184, 0.3);
-      color: #17a2b8;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 20px 0;
-      text-align: center;
-      backdrop-filter: blur(10px);
-    }
-
-    .search-section {
-      margin: 30px 0;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .search-input {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 25px;
-      min-width: 300px;
-      font-size: 16px;
-      backdrop-filter: blur(10px);
-    }
-
-    .search-input::placeholder {
-      color: rgba(255,255,255,0.6);
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .refresh-btn {
-      background: linear-gradient(135deg, #28a745, #20c997);
-      color: white;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-    }
-
-    .refresh-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-    }
-
-    /* Netflix-style Categories */
-    .category-section {
-      margin: 40px 0;
-    }
-
-    .category-title {
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-      color: white;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .category-count {
-      background: rgba(255,255,255,0.2);
-      padding: 4px 12px;
-      border-radius: 15px;
-      font-size: 0.9rem;
-      font-weight: normal;
-    }
-
-    .events-row {
-      display: flex;
-      gap: 20px;
-      overflow-x: auto;
-      padding: 10px 0 20px 0;
-      scroll-behavior: smooth;
-    }
-
-    /* Custom scrollbar */
-    .events-row::-webkit-scrollbar {
-      height: 8px;
-    }
-
-    .events-row::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-    }
-
-    .events-row::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-radius: 10px;
-    }
-
-    .event-card {
-      min-width: 320px;
-      max-width: 320px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-      border-radius: 15px;
-      padding: 20px;
-      transition: all 0.3s ease;
-      position: relative;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .event-card:hover {
-      transform: translateY(-10px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(102, 126, 234, 0.5);
-    }
-
-    .event-image {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      transition: all 0.3s ease;
-    }
-
-    .event-card:hover .event-image {
-      transform: scale(1.05);
-    }
-
-    .image-placeholder {
-      width: 100%;
-      height: 180px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 10px;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      color: white;
-    }
-
-    .event-title {
+    .hero p {
+      color: #666;
       font-size: 1.3rem;
+      margin-bottom: 40px;
+    }
+
+    .cta-button {
+      background: linear-gradient(135deg, #ec407a, #ba68c8);
+      color: white;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.1rem;
       font-weight: bold;
-      margin-bottom: 10px;
-      color: white;
-      line-height: 1.3;
-      height: 2.6rem;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .event-details {
-      margin-bottom: 15px;
-    }
-
-    .event-detail {
-      margin: 8px 0;
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.8);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .event-detail-icon {
-      font-size: 1rem;
-      width: 16px;
-    }
-
-    .event-description {
-      color: rgba(255,255,255,0.7);
-      font-size: 0.85rem;
-      line-height: 1.4;
-      margin: 10px 0;
-      height: 3.6rem;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-    }
-
-    .register-btn {
-      background: linear-gradient(135deg, #28a745, #20c997);
-      color: white;
+      cursor: pointer;
       text-decoration: none;
-      padding: 12px 20px;
-      border-radius: 25px;
-      font-weight: bold;
+      display: inline-block;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(236, 64, 122, 0.3);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(236, 64, 122, 0.4);
+    }
+
+    .features {
+      max-width: 1200px;
+      margin: 60px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(236, 64, 122, 0.1);
       text-align: center;
-      transition: all 0.3s ease;
-      display: block;
-      margin-top: 15px;
+      transition: all 0.3s;
+      border: 2px solid #fce4ec;
     }
 
-    .register-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
-      background: linear-gradient(135deg, #218838, #1ea085);
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(236, 64, 122, 0.2);
+      border-color: #ec407a;
     }
 
-    .no-events {
-      text-align: center;
-      padding: 80px 20px;
-      color: rgba(255,255,255,0.6);
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
     }
 
-    .no-events h3 {
-      color: white;
+    .feature-card h3 {
+      color: #ec407a;
       margin-bottom: 15px;
       font-size: 1.5rem;
     }
 
-    .loading {
+    .feature-card p {
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .footer {
+      background: linear-gradient(135deg, #ec407a 0%, #ba68c8 100%);
+      color: white;
       text-align: center;
-      padding: 60px;
-      color: #667eea;
-      font-size: 1.2rem;
+      padding: 30px 20px;
+      margin-top: 80px;
     }
-
-    .category-icon {
-      font-size: 1.5rem;
-    }
-
-    /* Category specific colors */
-    .category-technical .category-title { color: #007bff; }
-    .category-cultural .category-title { color: #e91e63; }
-    .category-sports .category-title { color: #ff9800; }
-    .category-academic .category-title { color: #4caf50; }
-    .category-workshop .category-title { color: #9c27b0; }
-    .category-seminar .category-title { color: #ff5722; }
-    .category-general .category-title { color: #607d8b; }
 
     @media (max-width: 768px) {
-      .header-content {
-        text-align: center;
+      .hero h1 {
+        font-size: 2.5rem;
       }
       
-      .page-title h1 {
-        font-size: 2rem;
+      .hero p {
+        font-size: 1.1rem;
       }
       
-      .search-section {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .search-input {
-        min-width: 250px;
-      }
-      
-      .event-card {
-        min-width: 280px;
-        max-width: 280px;
+      .features {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -359,321 +172,55 @@
 <body>
   <div class="header">
     <div class="header-content">
-      <div class="user-welcome">
-        Welcome, <span id="userName">Student</span>! 👨‍🎓
+      <div class="logo">
+        🎓 Event Connect
       </div>
-      <div style="display: flex; gap: 15px; align-items: center;">
-        <button onclick="openTimetable()" class="timetable-btn" title="Timetable">
-          📅
-        </button>
-        <button onclick="logout()" class="logout-btn">Logout</button>
-      </div>
+      <a href="login.html" class="login-btn">Login</a>
     </div>
   </div>
 
-  <div class="page-title">
-    <h1>🎓 Campus Events</h1>
-    <p>Discover and register for exciting events happening on campus</p>
+  <div class="hero">
+    <h1>Welcome to Event Connect</h1>
+    <p>Your one-stop platform for discovering and managing campus events</p>
+    <a href="login.html" class="cta-button">Get Started →</a>
   </div>
 
-  <div class="container">
-    <div id="configInfo" class="config-info">
-      <strong>ℹ️ Demo Mode:</strong> Showing sample events. Configure Supabase for live data.
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🎪</div>
+      <h3>Discover Events</h3>
+      <p>Browse through all upcoming campus events organized by category - technical, cultural, sports, and more!</p>
     </div>
 
-    <div class="search-section">
-      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search events..." onkeyup="searchEvents()">
-      <button onclick="loadEvents()" class="refresh-btn">🔄 Refresh Events</button>
+    <div class="feature-card">
+      <div class="feature-icon">📅</div>
+      <h3>Smart Timetable</h3>
+      <p>Manage your class schedule and see event conflicts at a glance with our integrated timetable feature.</p>
     </div>
 
-    <div id="eventsContainer" class="loading">
-      Loading events...
+    <div class="feature-card">
+      <div class="feature-icon">📝</div>
+      <h3>OD Generator</h3>
+      <p>Generate professional On Duty letters instantly for attending events - no more manual paperwork!</p>
+    </div>
+
+
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Easy Registration</h3>
+      <p>One-click registration links for all events - quick, simple, and hassle-free event sign-ups.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">🏛️</div>
+      <h3>Event Hosting</h3>
+      <p>For organizers: Create and manage your events with our easy-to-use event management system.</p>
     </div>
   </div>
 
-  <script>
-    // 🔥🔥🔥 PASTE YOUR SUPABASE ANON KEY HERE 🔥🔥🔥
-    const SUPABASE_URL = 'https://erqzpxeqshcbzvoshqvm.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycXpweGVxc2hjYnp2b3NocXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NzI5MTUsImV4cCI6MjA3MzM0ODkxNX0.nUgUJtfQjv6YgFYzhiIA2ltndsyjClKf8o1v09OsCKE';
-    
-    let supabase = null;
-    let currentUser = null;
-    let allEvents = [];
-
-    // Initialize Supabase - SIMPLIFIED CHECK
-    console.log('🔍 Checking Supabase in events page...');
-    
-    if (SUPABASE_KEY && SUPABASE_KEY.length > 100 && SUPABASE_KEY.startsWith('eyJ')) {
-      try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        document.getElementById('configInfo').style.display = 'none';
-        console.log('✅ Events page: Supabase connected!');
-      } catch (error) {
-        console.error('❌ Supabase connection failed:', error);
-      }
-    } else {
-      document.getElementById('configInfo').innerHTML = '<strong>ℹ️ Demo Mode:</strong> Connect Supabase to see live events.';
-      console.error('❌ Invalid Supabase key in events page');
-    }
-
-    // Check authentication on page load
-    window.addEventListener('load', async () => {
-      const userData = sessionStorage.getItem('currentUser');
-      
-      if (!userData) {
-        alert('Please log in first!');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      currentUser = JSON.parse(userData);
-      
-      if (currentUser.user_type === 'hoster') {
-        alert('Hosters should use the event management page.');
-        window.location.href = 'hostevent.html';
-        return;
-      }
-
-      // Update welcome message
-      const userTypeIcon = currentUser.user_type === 'staff' ? '👨‍🏫' : '👨‍🎓';
-      document.getElementById('userName').textContent = `${currentUser.name}`;
-      document.querySelector('.user-welcome').innerHTML = `Welcome, <span id="userName">${currentUser.name}</span>! ${userTypeIcon}`;
-
-      loadEvents();
-    });
-
-    // Load events based on mode
-    async function loadEvents() {
-      document.getElementById('eventsContainer').innerHTML = '<div class="loading">Loading events...</div>';
-      
-      if (supabase) {
-        await loadEventsFromSupabase();
-      } else {
-        loadEventsFromDemo();
-      }
-    }
-
-    // Load events from Supabase
-    async function loadEventsFromSupabase() {
-      try {
-        console.log('📥 Loading events from Supabase...');
-
-        const { data: events, error } = await supabase
-          .from('events')
-          .select('*')
-          .order('event_date', { ascending: true });
-
-        if (error) {
-          console.error('❌ Error loading events:', error);
-          throw error;
-        }
-
-        console.log('✅ Loaded events from Supabase:', events);
-        allEvents = events || [];
-        displayEventsByCategory(allEvents);
-      } catch (error) {
-        console.error('Error loading events:', error);
-        document.getElementById('eventsContainer').innerHTML = 
-          '<div class="no-events"><h3>Error Loading Events</h3><p>Unable to load events from database.</p></div>';
-      }
-    }
-
-    // Load events from demo/localStorage
-    function loadEventsFromDemo() {
-      const savedEvents = localStorage.getItem('demoEvents');
-      const demoEvents = savedEvents ? JSON.parse(savedEvents) : [];
-
-      // Add sample events if none exist
-      if (demoEvents.length === 0) {
-        demoEvents.push(
-          {
-            id: 1,
-            title: "AI & Machine Learning Workshop",
-            venue: "Tech Lab 1",
-            event_date: "2024-12-20T10:00:00",
-            reg_link: "https://forms.google.com/tech-workshop",
-            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23007bff'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='18'%3EAI Workshop%3C/text%3E%3C/svg%3E",
-            description: "Learn the fundamentals of AI and machine learning with hands-on coding sessions.",
-            hoster_id: "HOST001",
-            hoster_name: "Tech Club",
-            category: "workshop",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: 2,
-            title: "Cultural Night 2024",
-            venue: "Open Air Theatre",
-            event_date: "2024-12-25T18:00:00",
-            reg_link: "https://forms.google.com/cultural-night",
-            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e91e63'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='18'%3ECultural Night%3C/text%3E%3C/svg%3E",
-            description: "A spectacular evening celebrating diverse cultures through music, dance, and drama.",
-            hoster_id: "HOST002",
-            hoster_name: "Cultural Society",
-            category: "cultural",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: 3,
-            title: "Blockchain Technology Seminar",
-            venue: "Seminar Hall A",
-            event_date: "2024-12-22T14:00:00",
-            reg_link: "https://forms.google.com/blockchain-seminar",
-            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23ff5722'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='16'%3EBlockchain Seminar%3C/text%3E%3C/svg%3E",
-            description: "Industry experts discuss the future of blockchain technology and cryptocurrency.",
-            hoster_id: "HOST001",
-            hoster_name: "Tech Club",
-            category: "seminar",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: 4,
-            title: "Annual Sports Day",
-            venue: "Sports Complex",
-            event_date: "2024-12-30T08:00:00",
-            reg_link: "https://forms.google.com/sports-day",
-            brochure_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23ff9800'/%3E%3Ctext x='150' y='100' text-anchor='middle' fill='white' font-family='Arial' font-size='18'%3ESports Day%3C/text%3E%3C/svg%3E",
-            description: "Compete in various sports and win exciting prizes in our annual sports festival.",
-            hoster_id: "HOST003",
-            hoster_name: "Sports Committee",
-            category: "sports",
-            created_at: new Date().toISOString()
-          }
-        );
-      }
-
-      allEvents = demoEvents;
-      displayEventsByCategory(allEvents);
-    }
-
-    // Display events grouped by category (Netflix style)
-    function displayEventsByCategory(events) {
-      const container = document.getElementById('eventsContainer');
-      
-      if (!events || events.length === 0) {
-        container.innerHTML = `
-          <div class="no-events">
-            <h3>🎭 No Events Available</h3>
-            <p>No upcoming events at the moment. Check back later!</p>
-          </div>
-        `;
-        return;
-      }
-
-      // Group events by category
-      const eventsByCategory = events.reduce((acc, event) => {
-        const category = event.category || 'general';
-        if (!acc[category]) {
-          acc[category] = [];
-        }
-        acc[category].push(event);
-        return acc;
-      }, {});
-
-      // Category metadata
-      const categoryInfo = {
-        technical: { name: 'Technical Events', icon: '💻', color: 'technical' },
-        cultural: { name: 'Cultural Events', icon: '🎭', color: 'cultural' },
-        sports: { name: 'Sports Events', icon: '⚽', color: 'sports' },
-        academic: { name: 'Academic Events', icon: '📚', color: 'academic' },
-        workshop: { name: 'Workshops', icon: '🛠️', color: 'workshop' },
-        seminar: { name: 'Seminars', icon: '🎤', color: 'seminar' },
-        general: { name: 'General Events', icon: '🎪', color: 'general' }
-      };
-
-      // Create HTML for each category
-      let html = '';
-      Object.keys(eventsByCategory).forEach(categoryKey => {
-        const categoryEvents = eventsByCategory[categoryKey];
-        const info = categoryInfo[categoryKey] || categoryInfo.general;
-        
-        html += `
-          <div class="category-section category-${info.color}">
-            <h2 class="category-title">
-              <span class="category-icon">${info.icon}</span>
-              ${info.name}
-              <span class="category-count">${categoryEvents.length}</span>
-            </h2>
-            <div class="events-row">
-              ${categoryEvents.map(event => createEventCard(event)).join('')}
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-    }
-
-    // Create individual event card
-    function createEventCard(event) {
-      return `
-        <div class="event-card">
-          ${event.brochure_url ? 
-            `<img src="${event.brochure_url}" alt="Event Brochure" class="event-image" 
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-             <div class="image-placeholder" style="display:none;">🎪</div>` :
-            `<div class="image-placeholder">🎪</div>`
-          }
-          
-          <div class="event-title">${event.title}</div>
-          
-          <div class="event-details">
-            <div class="event-detail">
-              <span class="event-detail-icon">📅</span>
-              ${new Date(event.event_date).toLocaleDateString()}
-            </div>
-            <div class="event-detail">
-              <span class="event-detail-icon">⏰</span>
-              ${new Date(event.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-            </div>
-            <div class="event-detail">
-              <span class="event-detail-icon">📍</span>
-              ${event.venue}
-            </div>
-            <div class="event-detail">
-              <span class="event-detail-icon">🏛️</span>
-              ${event.hoster_name || event.users?.name || 'Event Organizer'}
-            </div>
-          </div>
-          
-          ${event.description ? `
-            <div class="event-description">
-              ${event.description}
-            </div>
-          ` : ''}
-          
-          <a href="${event.reg_link}" target="_blank" class="register-btn">
-            🚀 Register Now
-          </a>
-        </div>
-      `;
-    }
-
-    // Search events
-    function searchEvents() {
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      const filteredEvents = allEvents.filter(event => 
-        event.title.toLowerCase().includes(searchTerm) ||
-        event.venue.toLowerCase().includes(searchTerm) ||
-        event.category.toLowerCase().includes(searchTerm) ||
-        event.description?.toLowerCase().includes(searchTerm)
-      );
-      displayEventsByCategory(filteredEvents);
-    }
-
-    // Logout function
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        sessionStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
-      }
-    }
-
-    // Listen for storage changes (when hosters add events in demo mode)
-    window.addEventListener('storage', function(e) {
-      if (e.key === 'demoEvents') {
-        loadEvents();
-      }
-    });
-  </script>
+  <div class="footer">
+    <p>&copy; 2024 Event Connect. All rights reserved.</p>
+    <p style="margin-top: 10px; opacity: 0.8;">Connecting students with amazing campus experiences</p>
+  </div>
 </body>
 </html>
